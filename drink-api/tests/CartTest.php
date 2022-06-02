@@ -30,7 +30,7 @@ class CartTest extends TestCase
     public function testClearProductsCart()
     {
         $this->data();
-        $response = $this->call('get', 'cart/remove-all-products/' . $this->cart->id);
+        $response = $this->call('get', 'cart/' . $this->user->id.'/remove-all-products');
         $this->assertEquals(200, $response->status());
         $this->missingFromDatabase('cart_items', [
             'cart_id' => $this->cart->id,
@@ -109,7 +109,7 @@ class CartTest extends TestCase
     public function testUpdateProduct()
     {
         $this->data();
-        $response = $this->call('POST', 'cart/', [
+        $response = $this->call('PATCH', 'cart/'.$this->user->id, [
             'user_id' => $this->user->id,
             'product_id' => $this->product->id,
             'quantity' => '5',

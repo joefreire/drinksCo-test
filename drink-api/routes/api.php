@@ -14,10 +14,9 @@ $router->group(['prefix' => 'product'], function () use ($router) {
 });
 
 $router->group(['prefix' => 'cart'], function () use ($router) {
-    $router->get('/{id}', ['uses' => 'CartController@showOne']);  
-    $router->get('/remove-all-products/{id}', ['uses' => 'CartController@removeAllProducts']);  
+    $router->get('/{user_id}/remove-all-products', ['uses' => 'CartController@removeAllProducts']);  
     $router->post('/', ['uses' => 'CartController@store']);  
+    $router->patch('/{user_id}', ['uses' => 'CartController@update']);
     $router->post('/remove-item', ['uses' => 'CartController@removeProduct']);  
-    $router->delete('/{id}', ['uses' => 'CartController@destroy']);  
-    $router->patch('/{id}', ['uses' => 'CartController@update']);
+    $router->get('/{user_id}/result', ['uses' => 'CartController@result']);  
 });

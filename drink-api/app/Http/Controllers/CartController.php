@@ -13,27 +13,6 @@ use App\Http\Requests\CartRemoveProductRequest;
 
 class CartController extends Controller
 {
-
-    public function index()
-    {
-        $data = Cart::all();
-        if (count($data)) {
-            return $this->buildResponses('success', 'Cart', $data);
-        } else {
-            return $this->buildFailResponse('fail', 'Cart Not Found');
-        }
-    }
-
-    public function show($id)
-    {
-        $data = Cart::findOrFail($id);
-        if ($data) {
-            return $this->buildResponse('success', $data);
-        } else {
-            return $this->buildFailResponse('fail', 'Cart not found');
-        }
-    }
-
     public function store(Request $request)
     {
         $validate = new CartPostRequest($request->all());
@@ -42,7 +21,7 @@ class CartController extends Controller
         $cart = $service->addProductCart($data['product_id'], $data['quantity']);
         return $this->buildResponse('success', $cart);
     }
-    public function update(Request $request)
+    public function update(Request $request, $user_id)
     {
         $validate = new CartPatchRequest($request->all());
         $data = $validate->parse();
@@ -50,9 +29,9 @@ class CartController extends Controller
         $cart = $service->updateProductCart($data['product_id'], $data['quantity']);
         return $this->buildResponse('success', $cart);
     }
-    public function removeAllProducts($id)
+    public function removeAllProducts($user_id)
     {
-        $cart = Cart::findOrFail($id);
+        $cart = Cart::getActiveCart($user_id);
         $cart->cartItems()->delete();
         return $this->buildResponse('success', $cart);
     }
@@ -64,14 +43,11 @@ class CartController extends Controller
         $cart = $service->removeProductCart($data['product_id'], $data['cart_id']);
         return $this->buildResponse('success', $cart);
     }
-
-    public function destroy($id)
+    //TODO: Authentication
+    public function result($user_id)
     {
-        try {
-            Cart::destroy($id);
-            return $this->buildResponse('success');
-        } catch (ModelNotFoundException $exception) {
-            return $this->buildFailResponse("fail", "No query result for " . $id);
-        }
+        $cart = Cart::getActiveCart($user_id);
+        return $this->buildResponse('success', $cart->getTotal());
     }
+
 }

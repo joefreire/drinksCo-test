@@ -20,23 +20,36 @@ class CartTest extends TestCase
         $this->user = $user;
         $product = Product::inRandomOrder()->first();
         if (empty($product)) {
-            $productTest = new ProductTest();
-            $productTest->testCreateProduct();
-            $product = Product::inRandomOrder()->first();
+            $product = $this->createProduct();
         }
         $this->product = $product;
         $this->cart = Cart::getActiveCart($user->id);
     }
+    public function createProduct()
+    {
+        $rand = rand();
+        $price = rand(2, 30);
+        $response = $this->call('POST', 'product/', [
+            'title' => 'TestPHPUnit Product ' . $rand,
+            'price' => $price,
+            'price_sale' => ($price * 0.9),
+            'min_to_sale' => rand(2, 10)
+        ]);
+
+        $this->assertEquals(200, $response->status());
+        $this->seeInDatabase('products', ['title' => 'TestPHPUnit Product ' . $rand]);
+        return Product::where(['title' => 'TestPHPUnit Product ' . $rand])->first();
+    }
     public function testClearProductsCart()
     {
         $this->data();
-        $response = $this->call('GET', 'cart/remove-all-products/'. $this->user->id );
+        $response = $this->call('GET', 'cart/remove-all-products/' . $this->user->id);
         $this->assertEquals(200, $response->status());
         $this->missingFromDatabase('cart_items', [
             'cart_id' => $this->cart->id,
         ]);
     }
-    public function addProduct()
+    public function addProductCart()
     {
         $response = $this->call('POST', 'cart/', [
             'user_id' => $this->user->id,
@@ -49,9 +62,7 @@ class CartTest extends TestCase
     {
         $anotherProduct = Product::whereNotIn('id', $this->cart->cartItems()->pluck('product_id'))->inRandomOrder()->first();
         if (empty($anotherProduct)) {
-            $productTest = new ProductTest();
-            $productTest->testCreateProduct();
-            $anotherProduct = Product::whereNotIn('id', $this->cart->cartItems()->pluck('product_id'))->inRandomOrder()->first();
+            $anotherProduct = $this->createProduct();
         }
         $response = $this->call('POST', 'cart/', [
             'user_id' => $this->user->id,
@@ -77,7 +88,7 @@ class CartTest extends TestCase
     public function testFailAddMoreThen10ProductsCart()
     {
         $this->testClearProductsCart();
-        $response = $this->addProduct();
+        $response = $this->addProductCart();
         $this->assertEquals(200, $response->status());
         $cart = $this->cart->cartItems()->count();
         while ($cart <= 9) {
@@ -87,9 +98,7 @@ class CartTest extends TestCase
         }
         $anotherProduct = Product::whereNotIn('id', $this->cart->cartItems()->pluck('product_id'))->inRandomOrder()->first();
         if (empty($anotherProduct)) {
-            $productTest = new ProductTest();
-            $productTest->testCreateProduct();
-            $anotherProduct = Product::whereNotIn('id', $this->cart->cartItems()->pluck('product_id'))->inRandomOrder()->first();
+            $anotherProduct = $this->createProduct();
         }
         $response = $this->call('POST', 'cart/', [
             'user_id' => $this->user->id,
@@ -105,7 +114,7 @@ class CartTest extends TestCase
     public function testAddJustOneProductCart()
     {
         $this->testClearProductsCart();
-        $response = $this->addProduct();
+        $response = $this->addProductCart();
         $this->assertEquals(200, $response->status());
         $this->seeInDatabase('cart_items', [
             'product_id' => $this->product->id
@@ -115,7 +124,7 @@ class CartTest extends TestCase
     public function testAddOneMoreProductCart()
     {
         $this->testClearProductsCart();
-        $response = $this->addProduct();
+        $response = $this->addProductCart();
         $this->assertEquals(200, $response->status());
         $response = $this->addMoreProduct();
         $this->assertEquals(200, $response->status());
@@ -151,7 +160,7 @@ class CartTest extends TestCase
     public function testResultCart()
     {
         $this->testAddJustOneProductCart();
-        $response = $this->call('GET', 'cart/total-cart/'.$this->user->id);
+        $response = $this->call('GET', 'cart/total-cart/' . $this->user->id);
         $this->assertEquals(200, $response->status());
     }
 }

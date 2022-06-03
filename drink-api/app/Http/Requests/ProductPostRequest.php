@@ -12,8 +12,8 @@ class ProductPostRequest
         $validator = Validator::make($data, [
             'title' => 'required|max:100|min:5',
             'price' => 'required|numeric|min:0',
-            'price_sale' => 'required|numeric|min:0',
-            'min_to_sale' => 'nullable|numeric|min:0|lte:price_sale',
+            'price_sale' => 'required|numeric|min:0|lte:price',
+            'min_to_sale' => 'nullable|numeric|min:1',
         ]);
 
         if ($validator->fails())

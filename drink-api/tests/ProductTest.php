@@ -9,11 +9,12 @@ class ProductTest extends TestCase
     public function testCreateProduct()
     {
         $rand = rand();
+        $price = rand(2,30);
         $response = $this->call('POST', 'product/', [
             'title' => 'TestPHPUnit Product '.$rand,
-            'price' => '3',
-            'price_sale' => '2',
-            'min_to_sale' => '1'
+            'price' => $price,
+            'price_sale' => ($price * 0.9),
+            'min_to_sale' => rand(2,10)
         ]);
         $this->assertEquals(200, $response->status());
         $this->seeInDatabase('products', ['title' => 'TestPHPUnit Product '.$rand]);

@@ -30,7 +30,7 @@ class CartTest extends TestCase
     public function testClearProductsCart()
     {
         $this->data();
-        $response = $this->call('get', 'cart/' . $this->user->id.'/remove-all-products');
+        $response = $this->call('GET', 'cart/remove-all-products/'. $this->user->id );
         $this->assertEquals(200, $response->status());
         $this->missingFromDatabase('cart_items', [
             'cart_id' => $this->cart->id,
@@ -59,6 +59,20 @@ class CartTest extends TestCase
             'quantity' => rand(1, 10),
         ]);
         return $response;
+    }
+    public function testFailAddMoreThen50QuantityCart()
+    {
+        $this->testClearProductsCart();
+        $response = $this->call('POST', 'cart/', [
+            'user_id' => $this->user->id,
+            'product_id' => $this->product->id,
+            'quantity' => 55,
+        ]);
+        $this->assertEquals(400, $response->status());
+        $this->missingFromDatabase('cart_items', [
+            'cart_id' => $this->cart->id,
+            'product_id' => $this->product->id,
+        ]);
     }
     public function testFailAddMoreThen10ProductsCart()
     {
@@ -108,8 +122,8 @@ class CartTest extends TestCase
     }
     public function testUpdateProduct()
     {
-        $this->data();
-        $response = $this->call('PATCH', 'cart/'.$this->user->id, [
+        $this->testAddJustOneProductCart();
+        $response = $this->call('PATCH', 'cart/' . $this->user->id, [
             'user_id' => $this->user->id,
             'product_id' => $this->product->id,
             'quantity' => '5',
@@ -133,5 +147,11 @@ class CartTest extends TestCase
             'cart_id' => $this->cart->id,
             'product_id' => $this->cart->cartItems->first()->product_id,
         ]);
+    }
+    public function testResultCart()
+    {
+        $this->testAddJustOneProductCart();
+        $response = $this->call('GET', 'cart/total-cart/'.$this->user->id);
+        $this->assertEquals(200, $response->status());
     }
 }

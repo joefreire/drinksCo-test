@@ -6,11 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\CartPostRequest;
 use App\Http\Requests\CartPatchRequest;
-use App\Models\Cart;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Services\CartService;
 use App\Http\Requests\CartRemoveProductRequest;
 
+//TODO: Authentication
 class CartController extends Controller
 {
     public function store(Request $request)
@@ -31,8 +30,8 @@ class CartController extends Controller
     }
     public function removeAllProducts($user_id)
     {
-        $cart = Cart::getActiveCart($user_id);
-        $cart->cartItems()->delete();
+        $service = new CartService($user_id);
+        $cart = $service->removeAllProductsCart();
         return $this->buildResponse('success', $cart);
     }
     public function removeProduct(Request $request)
@@ -43,11 +42,10 @@ class CartController extends Controller
         $cart = $service->removeProductCart($data['product_id'], $data['cart_id']);
         return $this->buildResponse('success', $cart);
     }
-    //TODO: Authentication
-    public function result($user_id)
-    {
-        $cart = Cart::getActiveCart($user_id);
-        return $this->buildResponse('success', $cart->getTotal());
-    }
 
+    public function totalCart($user_id)
+    {
+        $service = new CartService($user_id);
+        return $this->buildResponse('success', $service->getResultTotal());
+    }
 }

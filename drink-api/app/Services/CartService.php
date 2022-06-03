@@ -19,12 +19,12 @@ class CartService
         $this->user = User::findOrFail($user_id);
         $this->cart = Cart::getActiveCart($this->user->id);
         $this->cartItems = $this->cart->cartItems();
-        if ($this->cartItems->count() >= 10)
-            throw new Exception("Itens in the cart can not be more than 10");
     }
 
     public function addProductCart($product_id, $quantity)
     {
+        if ($this->cartItems->count() >= 10)
+            throw new Exception("Itens in the cart can not be more than 10");
         $product = Product::findOrFail($product_id);
         $productsInCart = $this->cartItems->where('product_id', $product->id);
         if ($productsInCart->count() == 0) {
@@ -62,5 +62,15 @@ class CartService
         $cart = Cart::with('cartItems')->findOrFail($cart_id);
         $cart = $cart->cartItems()->where('product_id', $product_id)->delete();
         return $cart;
+    }
+    public function removeAllProductsCart()
+    {
+        $cart = $this->cart->cartItems()->delete();
+        return $cart;
+    }
+    public function getResultTotal()
+    {
+        $result = $this->cart->getTotal();
+        return $result;
     }
 }

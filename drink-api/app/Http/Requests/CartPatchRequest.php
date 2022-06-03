@@ -12,7 +12,7 @@ class CartPatchRequest
         $validator = Validator::make($data, [
             'user_id' => 'required|exists:users,id',
             'product_id' => 'required|exists:cart_items,product_id',
-            'quantity' => 'required|min:0|max:50',
+            'quantity' => 'required|numeric|min:0|max:50',
         ]);
 
         if ($validator->fails())

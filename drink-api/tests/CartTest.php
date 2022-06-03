@@ -13,8 +13,8 @@ class CartTest extends TestCase
     {
         $user = User::where('email', 'test@json.com')->first();
         if (empty($user)) {
-            $userTest = new UserTest();
-            $userTest->testCreateUser();
+            $response = $this->call('POST', '/register', ['username' => 'TestCart', 'email' => 'test@json.com', 'password' => 'teste1234']);
+            $this->assertEquals(200, $response->status());
             $user = User::where('email', 'test@json.com')->first();
         }
         $this->user = $user;
